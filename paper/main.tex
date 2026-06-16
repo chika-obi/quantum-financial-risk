@@ -1,1 +1,508 @@
-ECHO is on.
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+\usepackage{natbib}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{hyperref}
+\usepackage[margin=1in]{geometry}
+
+\title{Predicting Financial Risk: Benchmarking Classical Models and Exploring Quantum Neural Networks on S\&P 500 Data}
+\author{Kpanuku Chika-Obi \\ Department of Computer Science, Rivers State University, Port Harcourt, Nigeria \\ \texttt{chikaobi.kpanuku@rsu.edu.ng}}
+\date{2025}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Financial markets move fast. A single bad day can wipe out months of gains. Being able to predict risk ahead of time matters for anyone who trades money or manages investments.
+
+In this study, we tested several machine learning models to see which one predicts daily stock market risk best. We used S\&P 500 data from January 2020 to December 2024. The models we compared were Ridge Regression, Random Forest, Gradient Boosting, XGBoost, a basic Neural Network, and LSTM.
+
+Ridge Regression performed best. It gave a test RMSE of 0.818 percent. That means its predictions were off by less than one percent on average. LSTM came very close at 0.822 percent.
+
+We also calculated Value at Risk and Conditional Value at Risk for each model. Ridge Regression estimated that on a bad day, there is a 5 percent chance of losing more than 1.21 percent. When losses exceed that, the average loss is about 1.57 percent.
+
+Beyond classical models, we explored Quantum Neural Networks as a potential direction for financial risk prediction. We built a 2-qubit hybrid quantum-classical model using PennyLane. However, we encountered gradient stability issues resulting in NaN losses from the first epoch. We document these challenges to help other researchers avoid similar dead ends.
+
+All code and data are publicly available on GitHub. Anyone can reproduce our results.
+
+\textbf{Keywords:} financial risk; machine learning; quantum neural networks; ridge regression; LSTM; Value at Risk; S\&P 500
+\end{abstract}
+
+\section{Introduction}
+Traditional risk tools like Value at Risk and GARCH models work fine when markets are calm. But when things get crazy, like a pandemic or a sudden crash, they fall apart. They assume the world is more predictable than it really is. \citet{leber2025} showed that combining GARCH models with LSTM networks and adding sentiment data from social media can make volatility forecasts much more accurate. But these hybrid models are still complex and not always easy to use in practice.
+
+Machine learning offers a different path. Models like neural networks and random forests do not assume anything about the data. They just learn from what happened before. That makes them better at handling messy, real-world market behavior. \citet{wang2026} found that machine learning models consistently beat traditional statistical methods when it comes to predicting stock movements. \citet{elalami2025b} reviewed several studies and confirmed that Random Forest, XGBoost, and LSTM perform well on stock market data.
+
+But there is a catch. With so many models out there, which one should you actually use? Deep learning sounds impressive. But sometimes a simple method does just as well. \citet{abang2025} showed that adding volatility-weighted features to LSTM models improves accuracy. We wanted to find out for ourselves which approach works best on recent data.
+
+So we ran an experiment. We took S\&P 500 data from January 2020 to December 2024. That period includes COVID, inflation spikes, and a lot of up-and-down movement. We tested six models: Ridge Regression, Random Forest, Gradient Boosting, XGBoost, a basic Neural Network, and LSTM. We compared how well each one predicted daily returns.
+
+We also calculated two risk numbers that actually matter to people who manage money: Value at Risk and Conditional Value at Risk. These tell you how bad a bad day could get. \citet{zhang2024} showed that incorporating VaR and CVaR directly into model training helps Transformers handle extreme risk better. We wanted to see how standard models perform on these metrics without special training adjustments.
+
+Beyond classical models, we explored Quantum Neural Networks as a potential direction for financial risk prediction. \citet{chen2025} developed a hybrid classical-quantum neural network for stock market prediction and reported promising results. Following similar ideas, we built a 2-qubit hybrid quantum-classical model using PennyLane. However, we encountered gradient stability issues resulting in NaN losses from the first epoch. \citet{chen2025} noted that quantum machine learning for finance is still in early stages, and our experience confirms that current frameworks face challenges with financial time series data. We document these issues so others can learn from them.
+
+Here is what this paper gives you:
+\begin{itemize}
+\item A fair comparison of six common models on recent S\&P 500 data
+\item Clear numbers on which model predicts returns best
+\item VaR and CVaR calculations you can actually use
+\item An honest account of trying and failing to get a QNN to work
+\item All the code on GitHub so you can check our work or try your own ideas
+\end{itemize}
+
+Here is how the rest of the paper flows. Section 2 looks at what other researchers have done. Section 3 explains our data and methods. Section 4 shows the results. Section 5 talks about what the numbers mean. Section 6 wraps it up and says where to go next.
+
+\section{Literature Review}
+Before running our own experiments, we looked at what other researchers have done. This section covers three areas: traditional risk models, machine learning in finance, and quantum machine learning attempts.
+
+\subsection{Traditional Risk Models}
+For decades, people managing money relied on statistical tools to measure risk. The most common one is Value at Risk, or VaR. It answers a simple question: what is the worst loss I can expect on a normal day? \citet{rockafellar2022} refined this idea into Conditional Value at Risk, or CVaR, which looks at average losses when things get really bad. CVaR captures tail risk better than standard VaR.
+
+Another popular approach is GARCH models, which focus on volatility. \citet{bollerslev1986} originally developed GARCH to model how volatility clusters over time. These models work well when markets behave normally. But during crises, they fail. They assume returns follow a normal distribution, which real markets do not. \citet{orus2023} pointed out that traditional models often underestimate extreme risks because they cannot capture sudden regime changes.
+
+\subsection{Machine Learning in Finance}
+Machine learning entered finance as a response to these limitations. Neural networks do not assume normal distributions. They learn patterns directly from data. \citet{borovkova2022} compared LSTM networks against traditional models for high-frequency trading and found that deep learning captured complex patterns better.
+
+Random Forest and Gradient Boosting also perform well. \citet{jiang2023} showed that ensemble methods handle noisy financial data effectively. XGBoost, in particular, has become popular because it is fast and accurate. A study in \textit{Financial Innovation} \citep{financial2024} forecasted S\&P 500 stock returns using multiple machine learning models and found that combining different methods improved prediction accuracy.
+
+LSTM networks deserve special attention because they are designed for time series data. Unlike regular neural networks, LSTMs remember information over long periods. \citet{li2023} used hybrid quantum-classical neural networks for volatility forecasting and found that adding quantum layers improved performance on some datasets. \citet{abang2025} enhanced LSTM further by adding volatility-weighted input features and got better results on stock index forecasting.
+
+\subsection{Quantum Machine Learning for Finance}
+Quantum computing is still new, but researchers are excited about its potential for finance. \citet{biamonte2022} reviewed quantum machine learning and explained how properties like superposition and entanglement could help process large datasets more efficiently.
+
+For financial applications, \citet{cao2022} discussed how quantum algorithms could transform portfolio optimization and derivative pricing. \citet{orus2023} provided an overview of quantum computing for finance and argued that financial markets are well suited to quantum-enhanced modelling because of their interconnected nature.
+
+Several researchers have built Quantum Neural Networks for financial prediction. \citet{chen2025} developed a hybrid classical-quantum neural network called HQNN-FSP for stock market prediction and reported that quantum layers improved regression performance on some datasets. \citet{elalami2025} explored QNNs for financial time-series forecasting and found that quantum models handled high-dimensional data efficiently.
+
+However, not all results are positive. \citet{schuld2022} questioned whether quantum advantage is the right goal for quantum machine learning given current hardware limitations. \citet{zoufal2022} developed quantum generative adversarial networks but noted that training stability remains a challenge.
+
+Our own experience matches these warnings. We built a 2-qubit hybrid QNN using PennyLane and PyTorch. From the first epoch, we got NaN losses. Gradient stability was the main issue. \citet{chen2025} mentioned similar challenges. It seems quantum machine learning for finance works in theory but needs more mature frameworks.
+
+\subsection{Research Gap}
+After reviewing the literature, we identified a clear gap. Many studies test one or two models on financial data. Few compare a wide range of classical models side by side on recent S\&P 500 data. Even fewer calculate both prediction accuracy and risk metrics like VaR and CVaR for the same models.
+
+Also, while quantum machine learning papers focus on showing what works, few document what does not work. Our failed QNN attempt is worth sharing so others do not waste time on the same problems.
+
+This study fills these gaps. We compare six models fairly. We report both prediction errors and risk metrics. And we share honest lessons from trying to build a QNN.
+
+\section{Methodology}
+This section explains how we got our data, what features we created, how we built each model, and how we measured performance. The goal is to make everything clear enough that someone else could repeat our experiments.
+
+\subsection{Data Description}
+We used daily S\&P 500 data from Yahoo Finance. The period covers January 1, 2020 to December 31, 2024. We chose these dates because they include major market events like the COVID crash, the 2022 inflation spike, and the 2023-2024 recovery. This gives a good mix of calm and volatile periods.
+
+We downloaded adjusted closing prices. Then we calculated daily returns using the standard formula:
+
+\begin{equation}
+r_t = \ln\left(\frac{P_t}{P_{t-1}}\right)
+\end{equation}
+
+where $P_t$ is the closing price on day $t$. This gave us 1,256 daily returns after removing missing values from the first day.
+
+\subsection{Feature Engineering}
+To predict the next day's return, we created six features from past data. Five of them are lagged returns from the previous five days. The sixth is rolling volatility calculated over the same five-day window.
+
+Volatility on day $t$ is:
+
+\begin{equation}
+\sigma_t = \sqrt{\frac{1}{n-1} \sum_{i=1}^{n} (r_{t-i} - \bar{r})^2}
+\end{equation}
+
+where $n=5$ and $\bar{r}$ is the mean return over the window.
+
+This gave us a dataset of 1,250 samples. Each sample has six features and one target (the next day's return).
+
+\subsection{Data Preprocessing}
+Before training, we normalized all features and targets to the range $[0, 1]$ using Min-Max scaling:
+
+\begin{equation}
+x' = \frac{x - x_{\min}}{x_{\max} - x_{\min}}
+\end{equation}
+
+We used an 80/20 train-test split. The training set had 1,000 samples. The test set had 251 samples. We kept the split time-ordered, meaning we did not shuffle. This prevents data leakage and respects the time series nature of financial data.
+
+\subsection{Ridge Regression}
+Ridge regression is a linear model with L2 regularization. It adds a penalty term to the ordinary least squares loss function. The penalty shrinks coefficients toward zero but does not eliminate them completely. This helps prevent overfitting when features are correlated.
+
+We used the default alpha value of 1.0. No hyperparameter tuning was needed because the model performed well out of the box.
+
+\subsection{Random Forest}
+Random Forest builds many decision trees and averages their predictions. Each tree is trained on a random subset of the data and a random subset of features. This reduces variance and prevents overfitting.
+
+We used 100 trees. All other parameters were left at default values from scikit-learn.
+
+\subsection{Gradient Boosting}
+Unlike Random Forest, Gradient Boosting builds trees one after another. Each new tree tries to correct the errors made by previous trees. This often gives better accuracy but can overfit if not controlled.
+
+We used 100 trees with a learning rate of 0.1. We kept the default depth limit of 3 levels per tree.
+
+\subsection{XGBoost}
+XGBoost is an optimized version of gradient boosting. It is faster and often more accurate than the standard implementation. It includes built-in regularization to prevent overfitting.
+
+We used 100 trees with a learning rate of 0.1. All other parameters were left at default.
+
+\subsection{Neural Network}
+We built a simple fully-connected neural network with two hidden layers. The first layer has 64 neurons. The second has 32 neurons. Both use ReLU activation functions. We added dropout of 0.2 after each hidden layer to prevent overfitting. The output layer has one neuron with linear activation since this is a regression task.
+
+We trained the network for 100 epochs using the Adam optimizer with a learning rate of 0.001. We used mean squared error as the loss function.
+
+\subsection{LSTM}
+LSTM networks are designed for sequence data. They have gates that control what information to remember and what to forget. This makes them good at capturing long-term dependencies in time series.
+
+Our LSTM model has two layers. The first has 64 units. The second has 32 units. We added dropout of 0.2 after each LSTM layer. A dense layer with one neuron produces the final prediction.
+
+We trained the LSTM for 100 epochs with early stopping. If validation loss did not improve for 20 epochs, training stopped. We used the Adam optimizer with a learning rate of 0.001.
+
+\subsection{Quantum Neural Network Attempt}
+We also tried to build a Quantum Neural Network. We used PennyLane version 0.45.0 with PyTorch 2.11.0. The quantum circuit had 2 qubits. We used angle encoding to map classical features to quantum states. The variational circuit had 2 layers of RY rotations followed by CNOT gates for entanglement.
+
+The diff method was parameter-shift. We used a hybrid architecture where a classical layer projected 6 features down to 2 qubit inputs. The quantum circuit output fed into a final linear layer.
+
+Training failed immediately. Loss was NaN from the first epoch. Gradient stability was the main issue. We tried reducing the learning rate, adding gradient clipping, and switching to backprop differentiation. Nothing worked. \citet{chen2025} reported similar challenges. We include this documentation so others do not waste time on the same dead ends.
+
+\subsection{Risk Metrics}
+To evaluate risk, we calculated two standard metrics.
+
+Value at Risk (VaR) at confidence level $\alpha$ is the maximum expected loss at that level:
+
+\begin{equation}
+\text{VaR}_{\alpha} = \mu + \sigma \Phi^{-1}(\alpha)
+\end{equation}
+
+where $\mu$ and $\sigma$ are the mean and standard deviation of returns, and $\Phi^{-1}$ is the inverse normal distribution.
+
+Conditional Value at Risk (CVaR) is the average loss beyond VaR:
+
+\begin{equation}
+\text{CVaR}_{\alpha} = \mathbb{E}[L \mid L > \text{VaR}_{\alpha}]
+\end{equation}
+
+CVaR captures tail risk better than VaR. We calculated both at 95\% and 99\% confidence levels.
+
+We applied these calculations to prediction errors from each model. This tells us how wrong a model's predictions can be on bad days.
+
+\subsection{Evaluation Metrics}
+We used three metrics to compare model performance.
+
+Root Mean Square Error (RMSE) penalizes large errors more heavily:
+
+\begin{equation}
+\text{RMSE} = \sqrt{\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}
+\end{equation}
+
+Mean Absolute Error (MAE) treats all errors equally:
+
+\begin{equation}
+\text{MAE} = \frac{1}{n} \sum_{i=1}^{n} |y_i - \hat{y}_i|
+\end{equation}
+
+R-squared ($R^2$) measures how much variance the model explains:
+
+\begin{equation}
+R^2 = 1 - \frac{\sum_{i=1}^{n} (y_i - \hat{y}_i)^2}{\sum_{i=1}^{n} (y_i - \bar{y})^2}
+\end{equation}
+
+RMSE is reported in percentage terms so it is easy to interpret.
+
+\subsection{Experimental Setup}
+We ran all experiments on Google Colab with a CPU runtime. The code is written in Python. We used scikit-learn for classical models, TensorFlow for LSTM, and PennyLane for the QNN attempt.
+
+All hyperparameters are reported in Sections 3.4 through 3.9. The full code is available on GitHub at \url{https://github.com/chika-obi/quantum-financial-risk}.
+
+\section{Results}
+This section presents what we found. We start with data characteristics, then show model performance, then present risk metrics, and finally discuss the QNN attempt.
+
+\subsection{Data Characteristics}
+The S\&P 500 dataset covered 1,256 trading days from January 2020 to December 2024. Daily returns ranged from -12 percent to +9 percent. The worst day was March 16, 2020 during the COVID crash. The best day was March 24, 2020 during the recovery.
+
+Most daily returns clustered between -2 percent and +2 percent. The distribution had heavier tails than a normal distribution. This confirms what researchers like \citet{orus2023} have said: financial returns are not normal. This is exactly why machine learning models can help.
+
+The train-test split gave us 1,000 training samples and 251 test samples. No data leaked between training and testing because we kept the split time-ordered.
+
+\subsection{Model Performance Comparison}
+Table 1 shows how all six models performed on the test set.
+
+\begin{table}[ht]
+\centering
+\caption{Model Performance on Test Set}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Model} & \textbf{Test RMSE (\%)} & \textbf{Test MAE (\%)} \\
+\midrule
+Ridge Regression & 0.818 & 0.607 \\
+LSTM & 0.822 & 0.607 \\
+Neural Network & 0.834 & 0.620 \\
+Gradient Boosting & 0.835 & 0.617 \\
+Random Forest & 0.857 & 0.650 \\
+XGBoost & 0.961 & 0.737 \\
+\bottomrule
+\end{tabular}
+\label{tab:performance}
+\end{table}
+
+Ridge Regression performed best with a test RMSE of 0.818 percent. LSTM came very close at 0.822 percent. The difference is small enough that it could be due to random chance. Both models had nearly identical MAE values.
+
+The Neural Network and Gradient Boosting performed similarly with RMSE around 0.83 to 0.84 percent. Random Forest was slightly worse at 0.857 percent. XGBoost lagged behind at 0.961 percent.
+
+What surprised us was that a simple linear model with regularization beat more complex deep learning models. This matches what \citet{abang2025} found: adding complexity does not always improve results.
+
+Figure 1 visualizes these results. Ridge Regression and LSTM are clearly ahead of the other models.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.8\textwidth]{Figure1_model_performance.png}
+\caption{Model Performance Comparison - Test RMSE for all six models. Ridge Regression achieved the lowest error at 0.818 percent.}
+\label{fig:performance}
+\end{figure}
+
+\subsection{Ridge Regression Analysis}
+Since Ridge Regression was the best model, we looked at it more closely. Figure 2 shows predicted returns against actual returns on the test set. The predictions are not perfect, but they follow the general trend. Most points cluster near the diagonal line, which indicates reasonable accuracy.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.8\textwidth]{Figure4_prediction_accuracy.png}
+\caption{Ridge Regression Analysis - (Left) Predictions vs actual returns. (Right) Error distribution histogram.}
+\label{fig:ridge}
+\end{figure}
+
+The error distribution in Figure 2 (right panel) was centered near zero with a standard deviation of about 1.2 percent. Errors were roughly symmetric, meaning the model did not systematically overpredict or underpredict.
+
+\subsection{LSTM Performance}
+LSTM performed almost as well as Ridge Regression. Its RMSE of 0.822 percent was only 0.004 percent higher. Given the standard deviation of returns, this difference is not meaningful.
+
+The LSTM training stopped early at 41 epochs because validation loss stopped improving. The final validation loss was 0.0012. The model did not overfit noticeably. Training loss and validation loss stayed close throughout training.
+
+Figure 3 shows the LSTM training history and predictions. The test set predictions show similar accuracy to Ridge Regression.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.8\textwidth]{lstm_SP500_results.png}
+\caption{LSTM Results - Training loss (top left), predictions vs actual (top right), error distribution (bottom left), and time series comparison (bottom right).}
+\label{fig:lstm}
+\end{figure}
+
+\subsection{Feature Importance}
+For tree-based models, we examined feature importance. The most important feature by far was the previous day's return (lag\_1). It accounted for about 35 percent of the importance. The second most important was lag\_2 at about 20 percent. Rolling volatility came third at about 15 percent.
+
+Lagged returns from three to five days ago had lower importance. This makes sense. Recent prices matter more than older prices for predicting the next day.
+
+\subsection{Value at Risk Results}
+Table 2 shows VaR and CVaR at 95 and 99 percent confidence levels for each model. We also included the actual market VaR for comparison.
+
+\begin{table}[ht]
+\centering
+\caption{VaR and CVaR Comparison}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Model} & \textbf{VaR 95\% (\%)} & \textbf{CVaR 95\% (\%)} & \textbf{VaR 99\% (\%)} & \textbf{CVaR 99\% (\%)} \\
+\midrule
+Ridge Regression & -1.21 & -1.57 & -1.94 & -2.28 \\
+LSTM & -1.26 & -1.63 & -1.85 & -2.35 \\
+S\&P 500 Market & -1.35 & -1.91 & -2.24 & -2.79 \\
+\bottomrule
+\end{tabular}
+\label{tab:risk}
+\end{table}
+
+Ridge Regression estimated that there is a 5 percent chance of a prediction error exceeding 1.21 percent. When errors exceed that threshold, the average error is 1.57 percent. For extreme cases at the 1 percent level, the average error is 2.28 percent.
+
+Compared to the actual market, both models gave more conservative risk estimates. Their VaR and CVaR numbers were smaller in magnitude than the market's. This suggests that the models are better at capturing downside risk than the market itself.
+
+Figure 4 compares these metrics across models. Figure 5 presents a heatmap of all risk metrics.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.8\textwidth]{Figure2_risk_metrics.png}
+\caption{Risk Metrics Comparison - VaR and CVaR at 95\% and 99\% confidence levels across Ridge Regression, LSTM, and S\&P 500 Market.}
+\label{fig:risk}
+\end{figure}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.8\textwidth]{Figure3_risk_heatmap.png}
+\caption{Risk Metrics Heatmap - VaR and CVaR values at 95\% and 99\% confidence levels for all models and market benchmark.}
+\label{fig:heatmap}
+\end{figure}
+
+\subsection{Conditional Value at Risk}
+CVaR tells a more complete story than VaR. For Ridge Regression, CVaR at 95 percent was -1.57 percent. This means that on the worst 5 percent of prediction days, the average error was a loss of 1.57 percent. The gap between VaR and CVaR was about 0.36 percentage points. This gap represents the tail risk beyond the VaR threshold.
+
+For the market, the gap between VaR and CVaR was larger at 0.56 percentage points. This confirms that market returns have heavier tails than the model's prediction errors.
+
+\subsection{Quantum Neural Network Attempt}
+We attempted to build a Quantum Neural Network using PennyLane. The circuit had 2 qubits with 2 variational layers. We used angle encoding and CNOT entanglement. The diff method was parameter-shift.
+
+Training failed immediately. Loss was NaN from the first epoch. We tried reducing the learning rate from 0.01 to 0.001, then to 0.0001. We added gradient clipping. We switched from parameter-shift to backprop differentiation. Nothing worked.
+
+The issue appears to be gradient stability. \citet{chen2025} reported similar challenges with hybrid quantum-classical models for financial data. \citet{schuld2022} warned that quantum machine learning frameworks are not yet mature for real-world applications. Our experience confirms this.
+
+We include this documentation because failed experiments are rarely published. Other researchers trying to build QNNs for financial time series can learn from our mistakes.
+
+\section{Discussion}
+This section talks about what the results mean, why Ridge Regression performed so well, what the risk metrics tell us, and what we learned from trying to build a Quantum Neural Network.
+
+\subsection{Key Findings}
+Three main findings came out of this study.
+
+First, Ridge Regression performed as well as or better than more complex models. Its test RMSE of 0.818 percent was the lowest among all six models. LSTM came very close at 0.822 percent, but it did not beat the simple linear model.
+
+Second, adding complexity does not guarantee better results. The Neural Network had more parameters than Ridge Regression but performed slightly worse. XGBoost, which is often a top performer in machine learning competitions, had the highest RMSE among all models.
+
+Third, all models produced VaR and CVaR estimates that were more conservative than the actual market. This means they captured downside risk effectively. For a risk manager, a model that underestimates risk is dangerous. A model that overestimates risk is safer.
+
+\subsection{Why Ridge Regression Performed Best}
+We were surprised that a simple linear model beat deep learning. After thinking about it, we have a few explanations.
+
+First, daily stock returns have very little predictable signal. The signal-to-noise ratio is extremely low. Simple models are less likely to overfit to noise. Ridge Regression adds regularization, which shrinks coefficients and reduces overfitting even further.
+
+Second, the features we used were simple. Five lagged returns and one volatility measure do not capture complex patterns. A linear model may be enough to capture whatever signal exists in these features. Adding more model complexity just adds variance without improving bias.
+
+Third, deep learning models like LSTM and Neural Networks need more data to perform well. With only 1,000 training samples, they may not have enough examples to learn meaningful patterns. Given more data, the gap might widen.
+
+\citet{abang2025} found that LSTM improved when they added volatility-weighted features. Our features were simpler. With better feature engineering, LSTM might have performed better.
+
+\subsection{LSTM Performance}
+LSTM came very close to Ridge Regression. Its RMSE was only 0.004 percent higher. For practical purposes, the two models are equivalent.
+
+The LSTM training stopped early at 41 epochs. This suggests the model found a good solution quickly. It did not overfit, which is good. But it also did not find a solution that beat Ridge Regression.
+
+One limitation of our LSTM architecture is that we only used one timestep. Each sample was a single day with six features. LSTM really shines when it sees sequences over time. A better approach would be to use sequences of multiple days as input. That would let LSTM learn temporal patterns across time. We did not try this because our goal was to keep the comparison fair across all models.
+
+\subsection{Risk Metric Interpretation}
+The VaR and CVaR results have practical implications.
+
+For a portfolio manager, Ridge Regression says this: on a normal bad day, your prediction error will not exceed 1.21 percent 95 percent of the time. When it does exceed that threshold, the average error is 1.57 percent. For extreme bad days at the 99 percent confidence level, the average error is 2.28 percent.
+
+Compared to the market, these numbers are smaller. The market's CVaR at 95 percent was -1.91 percent. Ridge Regression's CVaR was -1.57 percent. This means the model's worst prediction errors are not as bad as the market's worst actual returns.
+
+This makes sense. The model is predicting returns, not generating them. Its errors are constrained by its training. The actual market can be more extreme.
+
+\citet{zhang2024} showed that incorporating VaR directly into model training helps with extreme risk. Our models did not have this special training. Yet they still produced reasonable VaR estimates. This suggests that standard models can be useful for risk assessment without special modifications.
+
+\subsection{Comparison with Literature}
+Our results align with some studies and contradict others.
+
+\citet{elalami2025b} reviewed machine learning in finance and concluded that deep learning often outperforms simpler methods. We did not find that. Ridge Regression performed best in our study. The difference may be due to data size. Their reviewed studies often used more data or higher-frequency data.
+
+\citet{wang2026} used multiview data for risk prediction and got good results. Our study only used price data. Adding more data sources like trading volume or economic indicators might have helped the more complex models.
+
+\citet{leber2025} combined GARCH with LSTM and sentiment data. Their hybrid model performed well. We did not try hybrid approaches. That is a direction for future work.
+
+\subsection{Practical Implications}
+For practitioners, our results offer a clear message. Start simple.
+
+If you are building a risk prediction system, try Ridge Regression first. It is easy to implement, fast to train, and hard to beat. Only add complexity if you have evidence it helps.
+
+For deep learning enthusiasts, LSTM is a reasonable choice. It performed almost as well as Ridge Regression. But do not expect magic. On daily financial data with limited samples, deep learning does not always win.
+
+The VaR and CVaR estimates from any of these models can be useful for risk management. All six models produced similar risk numbers. You do not need to pick the absolute best model. Any of them will give you reasonable risk estimates.
+
+\subsection{Quantum Neural Network Lessons}
+Our QNN attempt failed. We want to be clear about why so others can avoid the same problems.
+
+The main issue was gradient stability. From the first epoch, loss was NaN. We tried the standard fixes: lower learning rates, gradient clipping, different optimizers, different diff methods. Nothing worked.
+
+\citet{chen2025} reported successful QNN training for stock prediction. But their implementation used TensorFlow Quantum, not PennyLane. The framework may matter. TensorFlow Quantum handles batching differently and may be more stable.
+
+Another possibility is that 2 qubits with 2 layers is too simple for financial data. Adding more qubits or more layers might help. But it might also make stability worse.
+
+Given the time and computational constraints, we decided to stop. Our goal was not to solve QNN training. Our goal was to benchmark classical models and explore QNN feasibility. The feasibility part is clear: on current simulators with current frameworks, QNN training on financial time series is not stable.
+
+\citet{schuld2022} asked whether quantum advantage is the right goal for quantum machine learning. Our experience suggests we are not even at stable training yet. That needs to come first.
+
+\subsection{Limitations}
+This study has several limitations.
+
+First, we only used one asset class. S\&P 500 is a major index, but results may differ for other assets like individual stocks, commodities, or cryptocurrencies.
+
+Second, our dataset was relatively small. 1,000 training samples is not much for deep learning. With more data, the ranking of models might change.
+
+Third, we only used price-based features. Adding sentiment data, economic indicators, or alternative data might improve predictions, especially for deep learning models.
+
+Fourth, our LSTM only used one timestep. A true sequence model would use multiple days as input. This might help LSTM capture longer-term patterns.
+
+Fifth, we only tried one QNN architecture on one framework. Other architectures, more qubits, or TensorFlow Quantum might work better. We cannot say that QNNs cannot work. We can only say that our attempt did not work.
+
+Sixth, we used simulated quantum circuits, not real quantum hardware. Hardware may behave differently. But given the stability issues on simulators, hardware would likely be worse.
+
+\section{Conclusion and Future Work}
+This section wraps up what we learned, what the study contributed, and where researchers should go next.
+
+\subsection{Summary of Contributions}
+This study set out to answer a simple question: which machine learning model predicts financial risk best on recent S\&P 500 data?
+
+We tested six models. We calculated prediction errors and risk metrics. We also tried to build a Quantum Neural Network and documented why it failed.
+
+Here is what we contributed:
+
+First, a fair, reproducible comparison of six models on the same data. Anyone can run our code and get the same results.
+
+Second, clear evidence that Ridge Regression, a simple linear model with regularization, performed as well as complex deep learning models. Its test RMSE of 0.818 percent was the lowest among all models tested.
+
+Third, VaR and CVaR estimates for each model at 95 and 99 percent confidence levels. Ridge Regression estimated a 95 percent VaR of -1.21 percent and a 95 percent CVaR of -1.57 percent.
+
+Fourth, an honest account of a failed Quantum Neural Network attempt. We documented the gradient stability issues so other researchers do not waste time on the same problems.
+
+Fifth, all code and data publicly available on GitHub for full reproducibility.
+
+\subsection{Key Conclusions}
+Based on our results, we draw several conclusions.
+
+Simple models are hard to beat. Ridge Regression performed best despite being the simplest model in the comparison. For daily financial return prediction with limited data, adding complexity does not guarantee better results.
+
+Deep learning is not magic. LSTM performed well but did not outperform Ridge Regression. Neural Networks and XGBoost performed slightly worse. Practitioners should start simple and only add complexity when there is clear evidence it helps.
+
+Risk metrics from standard models are useful. All six models produced reasonable VaR and CVaR estimates. You do not need a perfect model to get useful risk numbers. Any of these models would be helpful for a risk manager.
+
+Quantum machine learning for finance is not ready yet. Our QNN attempt failed due to gradient stability issues. \citet{chen2025} reported successful training, but our experience shows that results are not consistent across frameworks and datasets. More work is needed before QNNs can be reliably used for financial time series.
+
+\subsection{Practical Recommendations}
+For someone building a financial risk prediction system today, here is our advice.
+
+Start with Ridge Regression. It is easy to implement, fast to train, and performed best in our tests. Use five lagged returns and rolling volatility as features. That is enough.
+
+If you want to try deep learning, use LSTM. It performed almost as well as Ridge Regression. But do not expect it to beat simple models on daily data with limited samples.
+
+For risk management, use VaR and CVaR from any of these models. They all give similar estimates. The exact numbers matter less than the trend. Monitor how risk estimates change over time.
+
+Do not spend time on Quantum Neural Networks yet. The frameworks are not stable. The gradient issues are real. Wait for better tools and hardware.
+
+\subsection{Future Work Directions}
+This study opens several paths for future research.
+
+First, more assets. We only used S\&P 500. Future work could test these models on individual stocks, other indices, commodities, currencies, or cryptocurrencies. Results may differ across asset classes.
+
+Second, more data. One thousand training samples is not much. Using 10 or 20 years of data might help deep learning models perform better. Higher-frequency data like hourly or minute bars might also reveal patterns that daily data misses.
+
+Third, better features. We only used price-based features. Adding trading volume, options data, economic indicators, or sentiment from news and social media could improve predictions. \citet{leber2025} showed that sentiment data helps GARCH-LSTM hybrids.
+
+Fourth, hybrid models. Combining GARCH with LSTM, as \citet{leber2025} did, might capture volatility dynamics better than either model alone. We did not try this, but it is worth exploring.
+
+Fifth, longer sequences for LSTM. Our LSTM only saw one timestep. Using sequences of 5, 10, or 20 days as input could help LSTM learn temporal patterns. This might close the small gap with Ridge Regression.
+
+Sixth, real-time trading simulation. Prediction accuracy is one thing. Actual trading performance is another. Future work could simulate trading strategies based on these models and compare real returns.
+
+Seventh, quantum machine learning revisited. When frameworks mature and hardware improves, QNNs should be tested again. TensorFlow Quantum may be more stable than PennyLane. More qubits and deeper circuits might help. But for now, classical models are the practical choice.
+
+Eighth, explainability. Understanding why a model makes a prediction matters for risk management. Future work could apply SHAP or LIME to these models to identify which features drive risk predictions.
+
+\subsection{Final Thoughts}
+Financial markets will always be hard to predict. That is not going to change. But we can get better at understanding and measuring risk.
+
+This study showed that you do not need exotic models to get useful risk estimates. A simple linear model with regularization works well. Deep learning adds value in some cases but not all. Quantum machine learning is promising but not ready.
+
+Our code and data are on GitHub. Run it yourself. Try different models. Add your own features. See what works for your data.
+
+The goal is not to predict the market perfectly. That is impossible. The goal is to make better decisions with the tools we have.
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}
