@@ -1,1 +1,22 @@
-ECHO is on.
+# Core data science
+pandas>=2.0.0
+numpy>=1.24.0
+scikit-learn>=1.3.0
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# Deep learning
+tensorflow>=2.15.0
+torch>=2.0.0
+
+# Financial data
+yfinance>=0.2.0
+
+# Machine learning (additional)
+xgboost>=1.7.0
+
+# Quantum (optional - for QNN exploration)
+pennylane>=0.35.0
+
+# Utilities
+requests>=2.31.0
