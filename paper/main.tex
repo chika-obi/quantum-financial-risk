@@ -249,18 +249,18 @@ XGBoost & 0.961 & 0.737 \\
 
 Ridge Regression performed best with a test RMSE of 0.818 percent. LSTM came very close at 0.822 percent. The difference is small enough that it could be due to random chance. Both models had nearly identical MAE values.
 
-The Neural Network and Gradient Boosting performed similarly with RMSE around 0.83 to 0.84 percent. Random Forest was slightly worse at 0.857 percent. XGBoost lagged behind at 0.961 percent.
-
-What surprised us was that a simple linear model with regularization beat more complex deep learning models. This matches what \citet{abang2025} found: adding complexity does not always improve results.
-
-Figure 1 visualizes these results. Ridge Regression and LSTM are clearly ahead of the other models.
+Figure 1 visualizes the performance gap between all models. Ridge Regression and LSTM are clearly ahead of the other models.
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.8\textwidth]{Figure1_model_performance.png}
-\caption{Model Performance Comparison - Test RMSE for all six models. Ridge Regression achieved the lowest error at 0.818 percent.}
-\label{fig:performance}
+\includegraphics[width=0.8\textwidth]{classical_SP500_results.png}
+\caption{Classical Model Performance Comparison. Bar chart showing test RMSE for all six models. Ridge Regression achieved the lowest error at 0.818 percent, followed closely by LSTM at 0.822 percent. XGBoost had the highest RMSE at 0.961 percent.}
+\label{fig:classical_performance}
 \end{figure}
+
+The Neural Network and Gradient Boosting performed similarly with RMSE around 0.83 to 0.84 percent. Random Forest was slightly worse at 0.857 percent. XGBoost lagged behind at 0.961 percent.
+
+What surprised us was that a simple linear model with regularization beat more complex deep learning models. This matches what \citet{abang2025} found: adding complexity does not always improve results.
 
 \subsection{Ridge Regression Analysis}
 Since Ridge Regression was the best model, we looked at it more closely. Figure 2 shows predicted returns against actual returns on the test set. The predictions are not perfect, but they follow the general trend. Most points cluster near the diagonal line, which indicates reasonable accuracy.
@@ -268,7 +268,7 @@ Since Ridge Regression was the best model, we looked at it more closely. Figure 
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.8\textwidth]{Figure4_prediction_accuracy.png}
-\caption{Ridge Regression Analysis - (Left) Predictions vs actual returns. (Right) Error distribution histogram.}
+\caption{Ridge Regression Analysis. (Left) Predictions vs actual returns on the test set. Points clustered near the diagonal indicate reasonable accuracy. (Right) Error distribution histogram centered near zero with standard deviation of about 1.2 percent.}
 \label{fig:ridge}
 \end{figure}
 
@@ -277,16 +277,16 @@ The error distribution in Figure 2 (right panel) was centered near zero with a s
 \subsection{LSTM Performance}
 LSTM performed almost as well as Ridge Regression. Its RMSE of 0.822 percent was only 0.004 percent higher. Given the standard deviation of returns, this difference is not meaningful.
 
-The LSTM training stopped early at 41 epochs because validation loss stopped improving. The final validation loss was 0.0012. The model did not overfit noticeably. Training loss and validation loss stayed close throughout training.
-
-Figure 3 shows the LSTM training history and predictions. The test set predictions show similar accuracy to Ridge Regression.
+Figure 3 shows the LSTM training history and predictions. The model stopped early at 41 epochs with a validation loss of 0.0012. The test set predictions show similar accuracy to Ridge Regression.
 
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.8\textwidth]{lstm_SP500_results.png}
-\caption{LSTM Results - Training loss (top left), predictions vs actual (top right), error distribution (bottom left), and time series comparison (bottom right).}
+\caption{LSTM Training and Prediction Results. (Top left) Training and validation loss curves showing early stopping at 41 epochs. (Top right) Predictions vs actual returns on the test set. (Bottom left) Error distribution centered near zero. (Bottom right) Time series comparison showing LSTM tracking actual returns.}
 \label{fig:lstm}
 \end{figure}
+
+The LSTM training stopped early at 41 epochs because validation loss stopped improving. The final validation loss was 0.0012. The model did not overfit noticeably. Training loss and validation loss stayed close throughout training.
 
 \subsection{Feature Importance}
 For tree-based models, we examined feature importance. The most important feature by far was the previous day's return (lag\_1). It accounted for about 35 percent of the importance. The second most important was lag\_2 at about 20 percent. Rolling volatility came third at about 15 percent.
@@ -315,19 +315,21 @@ Ridge Regression estimated that there is a 5 percent chance of a prediction erro
 
 Compared to the actual market, both models gave more conservative risk estimates. Their VaR and CVaR numbers were smaller in magnitude than the market's. This suggests that the models are better at capturing downside risk than the market itself.
 
-Figure 4 compares these metrics across models. Figure 5 presents a heatmap of all risk metrics.
+Figure 4 compares these metrics across models.
 
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.8\textwidth]{Figure2_risk_metrics.png}
-\caption{Risk Metrics Comparison - VaR and CVaR at 95\% and 99\% confidence levels across Ridge Regression, LSTM, and S\&P 500 Market.}
+\caption{Risk Metrics Comparison. VaR and CVaR at 95\% and 99\% confidence levels across Ridge Regression, LSTM, and S\&P 500 Market. All models produced more conservative estimates than the market.}
 \label{fig:risk}
 \end{figure}
+
+Figure 5 presents a heatmap of all risk metrics.
 
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.8\textwidth]{Figure3_risk_heatmap.png}
-\caption{Risk Metrics Heatmap - VaR and CVaR values at 95\% and 99\% confidence levels for all models and market benchmark.}
+\caption{Risk Metrics Heatmap. Color intensity shows the magnitude of potential losses at different confidence levels. Darker colors represent larger losses.}
 \label{fig:heatmap}
 \end{figure}
 

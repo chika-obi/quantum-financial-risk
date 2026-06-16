@@ -143,3 +143,5 @@ with open('README.md', 'w') as f:
 !git add README.md
 !git commit -m "Update README with classical model results"
 !git push origin main
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20615223.svg)](https://doi.org/10.5281/zenodo.20615223)
