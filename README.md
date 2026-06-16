@@ -1,5 +1,6 @@
 # Predicting Financial Risk: Benchmarking Classical Models and Exploring Quantum Neural Networks on S&P 500 Data
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20717940.svg)](https://doi.org/10.5281/zenodo.20717940)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 
@@ -55,10 +56,11 @@ quantum-financial-risk/
 git clone https://github.com/chika-obi/quantum-financial-risk.git
 cd quantum-financial-risk
 
-### 2. Install dependencies
+2. Install dependencies
+
 pip install -r requirements.txt
 
-### 3. Run notebooks in order
+3. Run notebooks in order
 Notebook	Description
 01_data_preparation.ipynb	Download S&P 500 data, create features
 02_classical_baseline.ipynb	Train Ridge, RF, XGBoost, NN
@@ -100,11 +102,14 @@ I also attempted to build a Quantum Neural Network using PennyLane with 2 qubits
 If you use this code or results in your research, please cite:
 
 bibtex
-@software{Kpanuku_Quantum_Financial_Risk_2025,
+@software{Kpanuku_Quantum_Financial_Risk_2026,
   author = {Kpanuku, Chika-Obi},
-  title = {Predicting Financial Risk: Benchmarking Classical Models and Exploring Quantum Neural Networks on S&P 500 Data},
-  year = {2025},
-  url = {https://github.com/chika-obi/quantum-financial-risk}
+  title = {Predicting Financial Risk: Benchmarking Classical Models and Exploring Quantum Neural Networks on S\&P 500 Data},
+  year = {2026},
+  publisher = {Zenodo},
+  version = {v1.0.0},
+  doi = {10.5281/zenodo.20717940},
+  url = {https://doi.org/10.5281/zenodo.20717940}
 }
 📧 Contact
 Author: Kpanuku Chika-Obi
@@ -113,35 +118,3 @@ Department: Computer Science, Rivers State University, Port Harcourt, Nigeria
 
 📜 License
 Distributed under the MIT License. See LICENSE file for more information.
-
-text
-
----
-
-## How to Update Your README on GitHub
-
-### Method 1: Directly on GitHub Website
-
-1. Go to your repository: `https://github.com/chika-obi/quantum-financial-risk`
-2. Find `README.md` in the file list
-3. Click on it to open the file
-4. Click the pencil icon (✏️) in the top right corner of the file view
-5. Delete all existing text
-6. Copy and paste the new README content from above
-7. Scroll down and click **"Commit changes"**
-
-### Method 2: Upload from Colab
-
-```python
-# Create the new README file in Colab
-readme_content = '''# Paste the entire README content from above here'''
-
-with open('README.md', 'w') as f:
-    f.write(readme_content)
-
-# Push to GitHub
-!git add README.md
-!git commit -m "Update README with classical model results"
-!git push origin main
-
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20615223.svg)](https://doi.org/10.5281/zenodo.20615223)
